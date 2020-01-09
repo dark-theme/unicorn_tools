@@ -1,11 +1,13 @@
 # unicorn_tools.py
 
 from PIL import Image, ImageDraw, ImageFont
-import time
+from time import sleep as tsleep
 import unicornhathd as uni
 
 _WIDTH, _HEIGHT = uni.get_shape()
 
+_FONT = "/usr/share/fonts/truetype/roboto/Roboto-Bold.ttf"
+_FONTSIZE = 12
 
 # Functions for unicornhathd
 
@@ -49,6 +51,10 @@ def shade_pixels(shader) -> None:
 
 # Additional functions
 
+def sleep(n: float) -> None:
+    """Avoids importing time in other modules"""
+    tsleep(n)
+
 def set_pixels(pixel_list: [[[int, int, int]]]) -> None:
     """Updates the unicorn given the array of colors"""
     for row in range(_HEIGHT):
@@ -75,8 +81,21 @@ def line_v(y, r, g, b) -> None:
     for x in range(_HEIGHT):
         set_pixel(x, y, r, g, b)
 
-def show_letter(s: str, fg: list, bg: list) -> None:
-    pass
+def show_letter(s: str, fg: (int)=(255,255,255), bg: (int)=(0,0,0)) -> None:
+    """Displays a single character (or more)"""
+    font = ImageFont.truetype(_FONT, _FONTSIZE)
+    w, h = font.getsize(s)
+
+    image = Image.new("RGB", (_WIDTH, _HEIGHT), bg)
+    ImageDraw.Draw(image).text(((_WIDTH-w)/2, (_HEIGHT-h*1.5)/2), s, fg, font)
+    image = image.rotate(270) # rotate the image
+
+    for x in range(_WIDTH):
+        for y in range(_HEIGHT):
+            pixel = image.getpixel((x, y))
+            r, g, b = (int(n) for n in pixel)
+            set_pixel(-x, y, r, g, b) 
+    show()
 
 def show_message(text: str, speed: float=0.02,
                  fg: (int)=(255,255,255), bg: (int)=(0,0,0)) -> None:
@@ -84,25 +103,25 @@ def show_message(text: str, speed: float=0.02,
     old_rotation = get_rotation()
     rotation(old_rotation + 270) # rotate
     
-    font = ImageFont.truetype(
-        "/usr/share/fonts/truetype/roboto/Roboto-Bold.ttf", 12)
+    font = ImageFont.truetype(_FONT, _FONTSIZE)
     w, h = font.getsize(text)
 
-    text_x, text_y = _WIDTH, 0
+    text_x, text_y = _WIDTH+1, 0
 
-    text_width = w + _WIDTH*2 # padding
+    text_width = w + _WIDTH*3 # padding
 
-    image = Image.new('RGB', (text_width, _HEIGHT), bg)
-    draw = ImageDraw.Draw(image)
-    draw.text((text_x, text_y), text, fg, font)
+    image = Image.new("RGB", (text_width, _HEIGHT), bg)
+    ImageDraw.Draw(image).text((text_x, text_y), text, fg, font)
 
     for scroll in range(text_width - _WIDTH):
         for x in range(_WIDTH):
             for y in range(_HEIGHT):
                 pixel = image.getpixel((x + scroll, y))
                 r, g, b = (int(n) for n in pixel)
-                uni.set_pixel(_WIDTH - 1 - x, y, r, g, b)
-        uni.show()
-        time.sleep(speed)
+                set_pixel(_WIDTH - 1 - x, y, r, g, b)
+        show()
+        sleep(speed)
         
     rotation(old_rotation)
+    clear()
+    show()
