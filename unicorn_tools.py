@@ -1,7 +1,7 @@
 # unicorn_tools.py
 
 from PIL import Image, ImageDraw, ImageFont
-from time import sleep as tsleep
+from time import sleep
 import unicornhathd as uni
 
 _WIDTH, _HEIGHT = uni.get_shape()
@@ -50,10 +50,6 @@ def shade_pixels(shader) -> None:
     uni.shade_pixels(shader)
 
 # Additional functions
-
-def sleep(n: float) -> None:
-    """Avoids importing time in other modules"""
-    tsleep(n)
 
 def set_pixels(pixel_list: [[[int, int, int]]]) -> None:
     """Updates the unicorn given the array of colors"""
@@ -125,3 +121,13 @@ def show_message(text: str, speed: float=0.02,
     rotation(old_rotation)
     clear()
     show()
+
+def char_sequence(text: str, speed: float=0.3,
+               fg: (int)=(255,255,255), bg: (int)=(0,0,0)) -> None:
+    """Displays text character by character"""
+    for c in tuple(text):
+        show_letter(c, fg, bg)
+        sleep(speed)
+        clear()
+        show()
+        sleep(speed/3)
