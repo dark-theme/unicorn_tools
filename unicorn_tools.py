@@ -90,7 +90,7 @@ def show_letter(s: str, fg: (int)=(255,255,255), bg: (int)=(0,0,0)) -> None:
         for y in range(_HEIGHT):
             pixel = image.getpixel((x, y))
             r, g, b = (int(n) for n in pixel)
-            set_pixel(-x, y, r, g, b) 
+            set_pixel(-x-1, y, r, g, b) 
     show()
 
 def show_message(text: str, speed: float=0.02,
@@ -131,3 +131,20 @@ def char_sequence(text: str, speed: float=0.3,
         clear()
         show()
         sleep(speed/3)
+
+def show_image(filename: str):
+    """Opens an image file and displays it"""
+    try:
+        image = Image.open(filename).resize((_WIDTH, _HEIGHT))
+        image = image.rotate(270)
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+
+        for x in range(_WIDTH):
+            for y in range(_HEIGHT):
+                pixel = image.getpixel((x, y))
+                r, g, b = (int(n) for n in pixel)
+                set_pixel(-x-1, y, r, g, b)
+        show()
+    finally:
+        image.close()
